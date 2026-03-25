@@ -1,3 +1,4 @@
+package com.nust.lms.model;
 /**
  * Abstract class demonstrates INHERITANCE and ABSTRACTION.
  * Common state/behavior for different people types is placed here.

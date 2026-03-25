@@ -1,3 +1,4 @@
+package com.nust.lms.model;
 /**
  * Member INHERITS from Person.
  * This reuses common fields (id, name) and can add member-specific behavior.

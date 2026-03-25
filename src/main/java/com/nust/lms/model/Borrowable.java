@@ -1,4 +1,4 @@
-
+package com.nust.lms.model;
 /**
  * Interface demonstrates ABSTRACTION.
  * It defines behavior ("what" should happen) without implementation details ("how").
