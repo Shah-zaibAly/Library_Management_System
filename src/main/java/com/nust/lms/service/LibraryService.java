@@ -1,9 +1,9 @@
-package main.java.com.nust.lms.service;
+package com.nust.lms.service;
 
-import com.nust.se.lmsapi.domain.Book;
-import com.nust.se.lmsapi.domain.Member;
-import com.nust.se.lmsapi.dto.BookDto;
-import com.nust.se.lmsapi.dto.MemberDto;
+import com.nust.lms.model.Book;
+import com.nust.lms.model.Member;
+import com.nust.lms.dto.BookDto;
+import com.nust.lms.dto.MemberDto;
 import com.nust.se.lmsapi.exception.BadRequestException;
 import com.nust.se.lmsapi.exception.NotFoundException;
 import jakarta.annotation.PostConstruct;
