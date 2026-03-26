@@ -1,4 +1,4 @@
-package main.java.com.nust.lms.controller;
+package com.nust.lms.controller;
 
 import com.nust.lms.dto.BookDto;
 import com.nust.lms.service.LibraryService;

@@ -1,9 +1,9 @@
-package main.java.com.nust.lms.controller;
+package com.nust.lms.controller;
 
-import com.nust.se.lmsapi.dto.BookDto;
-import com.nust.se.lmsapi.dto.IssueRequest;
-import com.nust.se.lmsapi.dto.ReturnRequest;
-import com.nust.se.lmsapi.service.LibraryService;
+import com.nust.lms.dto.BookDto;
+import com.nust.lms.dto.IssueRequest;
+import com.nust.lms.dto.ReturnRequest;
+import com.nust.lms.service.LibraryService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

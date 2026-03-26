@@ -4,8 +4,8 @@ import com.nust.lms.model.Book;
 import com.nust.lms.model.Member;
 import com.nust.lms.dto.BookDto;
 import com.nust.lms.dto.MemberDto;
-import com.nust.se.lmsapi.exception.BadRequestException;
-import com.nust.se.lmsapi.exception.NotFoundException;
+import com.nust.lms.exception.BadRequestException;
+import com.nust.lms.exception.NotFoundException;
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
 
