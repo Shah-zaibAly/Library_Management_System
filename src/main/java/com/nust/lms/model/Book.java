@@ -1,4 +1,4 @@
-
+package com.nust.lms.model;
 /**
  * Book class demonstrates ENCAPSULATION and INTERFACE IMPLEMENTATION.
  * It implements Borrowable, which is a form of POLYMORPHISM:
