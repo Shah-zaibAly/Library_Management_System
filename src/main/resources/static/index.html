@@ -1,0 +1,624 @@
+<!doctype html>
+<!-- This tells the browser: "this file is HTML5" -->
+<html lang="en">
+<!-- The <html> tag is the root of the page. lang="en" helps accessibility and search engines. -->
+
+<head>
+    <!-- The <head> contains "page settings" (not visible page content). -->
+    <meta charset="UTF-8" />
+    <!-- UTF-8 supports almost all characters (English + Urdu + emojis etc). -->
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- This makes the layout responsive on phones/tablets. -->
+
+    <title>Library Management System (Frontend Demo)</title>
+    <!-- This is the text you see on the browser tab. -->
+
+    <script>
+        // Tailwind CDN lets us configure Tailwind before it loads.
+        // darkMode: 'class' means: Tailwind's dark: styles activate when we add class="dark" on <html>.
+        tailwind = { config: { darkMode: 'class' } };
+    </script>
+    <!-- Tailwind CSS via CDN (no installation). -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+<!-- body classes:
+     - bg-slate-50 sets a light background
+     - text-slate-900 sets dark text
+     - dark:* classes apply when <html> has class="dark" -->
+
+<!-- PAGE CONTAINER -->
+<div class="min-h-screen">
+    <!-- min-h-screen means: at least full screen height -->
+
+    <!-- TOP HEADER -->
+    <header class="sticky top-0 z-50 border-b border-slate-200/70 bg-white/80 backdrop-blur dark:border-slate-800 dark:bg-slate-950/70">
+        <!-- sticky top-0 keeps header visible when you scroll -->
+        <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
+            <!-- max-w-6xl limits width; mx-auto centers; flex aligns items -->
+
+            <div class="flex items-center gap-3">
+                <!-- App "logo" circle -->
+                <div class="grid h-9 w-9 place-items-center rounded-xl bg-indigo-600 text-white font-semibold">
+                    LMS
+                </div>
+                <div>
+                    <div class="text-sm font-semibold leading-5">Library Management System</div>
+                    <div class="text-xs text-slate-500 dark:text-slate-400">Single-page frontend demo (localStorage)</div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <!-- Dark mode toggle button -->
+                <button id="darkModeBtn"
+                        class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium shadow-sm hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800"
+                        type="button">
+                    Toggle Dark Mode
+                </button>
+
+                <!-- Reset demo data button -->
+                <button id="resetBtn"
+                        class="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-medium text-rose-700 shadow-sm hover:bg-rose-100 dark:border-rose-900/40 dark:bg-rose-950/30 dark:text-rose-200 dark:hover:bg-rose-950/50"
+                        type="button">
+                    Reset Demo Data
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="mx-auto max-w-6xl px-4 py-6">
+        <!-- A simple "dashboard cards" row -->
+        <section class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <!-- Card 1: Books count -->
+            <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                <div class="text-xs font-medium text-slate-500 dark:text-slate-400">Total Books</div>
+                <div id="booksCount" class="mt-2 text-2xl font-semibold">0</div>
+                <div class="mt-2 text-xs text-slate-500 dark:text-slate-400">Includes issued + available</div>
+            </div>
+
+            <!-- Card 2: Members count -->
+            <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                <div class="text-xs font-medium text-slate-500 dark:text-slate-400">Total Members</div>
+                <div id="membersCount" class="mt-2 text-2xl font-semibold">0</div>
+                <div class="mt-2 text-xs text-slate-500 dark:text-slate-400">People who can borrow books</div>
+            </div>
+
+            <!-- Card 3: Issued books count -->
+            <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                <div class="text-xs font-medium text-slate-500 dark:text-slate-400">Issued Books</div>
+                <div id="issuedCount" class="mt-2 text-2xl font-semibold">0</div>
+                <div class="mt-2 text-xs text-slate-500 dark:text-slate-400">Currently borrowed</div>
+            </div>
+        </section>
+
+        <!-- NAVIGATION TABS -->
+        <section class="mt-6">
+            <div class="flex flex-wrap gap-2">
+                <button data-tab="books" class="tabBtn rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500"
+                        type="button">Books</button>
+                <button data-tab="members" class="tabBtn rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold shadow-sm hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800"
+                        type="button">Members</button>
+                <button data-tab="issue" class="tabBtn rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold shadow-sm hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800"
+                        type="button">Issue / Return</button>
+            </div>
+        </section>
+
+        <!-- BOOKS TAB -->
+        <section id="tab-books" class="tabPanel mt-6">
+            <div class="grid gap-6 lg:grid-cols-5">
+                <!-- Left: Add Book Form -->
+                <div class="lg:col-span-2 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                    <div class="text-sm font-semibold">Add a new book</div>
+                    <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                        This will be saved in <code class="rounded bg-slate-100 px-1 dark:bg-slate-800">localStorage</code> so it stays after refresh.
+                    </p>
+
+                    <form id="addBookForm" class="mt-4 space-y-3">
+                        <div>
+                            <label class="text-xs font-medium text-slate-600 dark:text-slate-300" for="bookId">Book ID</label>
+                            <input id="bookId" class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-800 dark:bg-slate-950"
+                                   placeholder="e.g. 101" required />
+                        </div>
+
+                        <div>
+                            <label class="text-xs font-medium text-slate-600 dark:text-slate-300" for="bookTitle">Title</label>
+                            <input id="bookTitle" class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-800 dark:bg-slate-950"
+                                   placeholder="e.g. Clean Code" required />
+                        </div>
+
+                        <div>
+                            <label class="text-xs font-medium text-slate-600 dark:text-slate-300" for="bookAuthor">Author</label>
+                            <input id="bookAuthor" class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-800 dark:bg-slate-950"
+                                   placeholder="e.g. Robert C. Martin" required />
+                        </div>
+
+                        <button class="w-full rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500"
+                                type="submit">
+                            Add Book
+                        </button>
+                    </form>
+
+                    <div id="booksMsg" class="mt-3 text-sm"></div>
+                </div>
+
+                <!-- Right: Books Table -->
+                <div class="lg:col-span-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <div class="text-sm font-semibold">Books</div>
+                            <div class="text-xs text-slate-500 dark:text-slate-400">Search by title or author</div>
+                        </div>
+
+                        <input id="bookSearch" class="w-full sm:w-72 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-800 dark:bg-slate-950"
+                               placeholder="Search books..." />
+                    </div>
+
+                    <div class="mt-4 overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead class="text-xs uppercase text-slate-500 dark:text-slate-400">
+                            <tr class="border-b border-slate-200 dark:border-slate-800">
+                                <th class="py-2 pr-3">ID</th>
+                                <th class="py-2 pr-3">Title</th>
+                                <th class="py-2 pr-3">Author</th>
+                                <th class="py-2 pr-3">Status</th>
+                                <th class="py-2">Issued To</th>
+                            </tr>
+                            </thead>
+                            <tbody id="booksTbody" class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- MEMBERS TAB -->
+        <section id="tab-members" class="tabPanel mt-6 hidden">
+            <div class="grid gap-6 lg:grid-cols-5">
+                <!-- Left: Add Member Form -->
+                <div class="lg:col-span-2 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                    <div class="text-sm font-semibold">Add a new member</div>
+                    <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                        A member is like your Java <code class="rounded bg-slate-100 px-1 dark:bg-slate-800">Member</code> class.
+                    </p>
+
+                    <form id="addMemberForm" class="mt-4 space-y-3">
+                        <div>
+                            <label class="text-xs font-medium text-slate-600 dark:text-slate-300" for="memberId">Member ID</label>
+                            <input id="memberId" class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-800 dark:bg-slate-950"
+                                   placeholder="e.g. 1" required />
+                        </div>
+
+                        <div>
+                            <label class="text-xs font-medium text-slate-600 dark:text-slate-300" for="memberName">Name</label>
+                            <input id="memberName" class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-800 dark:bg-slate-950"
+                                   placeholder="e.g. Ayesha" required />
+                        </div>
+
+                        <div>
+                            <label class="text-xs font-medium text-slate-600 dark:text-slate-300" for="memberEmail">Email</label>
+                            <input id="memberEmail" class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-800 dark:bg-slate-950"
+                                   placeholder="e.g. ayesha@nust.edu.pk" required />
+                        </div>
+
+                        <button class="w-full rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500"
+                                type="submit">
+                            Add Member
+                        </button>
+                    </form>
+
+                    <div id="membersMsg" class="mt-3 text-sm"></div>
+                </div>
+
+                <!-- Right: Members Table -->
+                <div class="lg:col-span-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                    <div class="text-sm font-semibold">Members</div>
+                    <div class="mt-4 overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead class="text-xs uppercase text-slate-500 dark:text-slate-400">
+                            <tr class="border-b border-slate-200 dark:border-slate-800">
+                                <th class="py-2 pr-3">ID</th>
+                                <th class="py-2 pr-3">Name</th>
+                                <th class="py-2">Email</th>
+                            </tr>
+                            </thead>
+                            <tbody id="membersTbody" class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ISSUE/RETURN TAB -->
+        <section id="tab-issue" class="tabPanel mt-6 hidden">
+            <div class="grid gap-6 lg:grid-cols-2">
+                <!-- Issue form -->
+                <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                    <div class="text-sm font-semibold">Issue a book</div>
+                    <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Give a book to a member (sets it as issued).</p>
+
+                    <form id="issueForm" class="mt-4 space-y-3">
+                        <div>
+                            <label class="text-xs font-medium text-slate-600 dark:text-slate-300" for="issueBookId">Book ID</label>
+                            <input id="issueBookId" class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-800 dark:bg-slate-950"
+                                   placeholder="e.g. 101" required />
+                        </div>
+                        <div>
+                            <label class="text-xs font-medium text-slate-600 dark:text-slate-300" for="issueMemberId">Member ID</label>
+                            <input id="issueMemberId" class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-800 dark:bg-slate-950"
+                                   placeholder="e.g. 1" required />
+                        </div>
+
+                        <button class="w-full rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500"
+                                type="submit">
+                            Issue Book
+                        </button>
+                    </form>
+
+                    <div id="issueMsg" class="mt-3 text-sm"></div>
+                </div>
+
+                <!-- Return form -->
+                <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                    <div class="text-sm font-semibold">Return a book</div>
+                    <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Return a book from the same member who issued it.</p>
+
+                    <form id="returnForm" class="mt-4 space-y-3">
+                        <div>
+                            <label class="text-xs font-medium text-slate-600 dark:text-slate-300" for="returnBookId">Book ID</label>
+                            <input id="returnBookId" class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-800 dark:bg-slate-950"
+                                   placeholder="e.g. 101" required />
+                        </div>
+                        <div>
+                            <label class="text-xs font-medium text-slate-600 dark:text-slate-300" for="returnMemberId">Member ID</label>
+                            <input id="returnMemberId" class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-800 dark:bg-slate-950"
+                                   placeholder="e.g. 1" required />
+                        </div>
+
+                        <button class="w-full rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-sky-500"
+                                type="submit">
+                            Return Book
+                        </button>
+                    </form>
+
+                    <div id="returnMsg" class="mt-3 text-sm"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-slate-200/70 py-6 text-center text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400">
+        Built with HTML + Tailwind CDN + Vanilla JavaScript. Data stored in localStorage (demo only).
+    </footer>
+</div>
+
+<script>
+    /**********************************************************************
+     * 1) BASIC IDEA (Beginner-friendly)
+     * - Backend (Spring Boot) is the source of truth for books + members.
+     * - Frontend uses fetch() to GET/POST data to http://localhost:8080.
+     * - We keep a simple in-memory UI state (arrays) and re-render the tables.
+     **********************************************************************/
+
+        // Base URL of your Spring Boot API.
+    const API_BASE = 'http://localhost:8080';
+
+    // We still keep dark mode in localStorage (UI preference only).
+    const DARK_KEY = 'lms_dark_mode';
+
+    // UI state (in-memory). These arrays are filled by API calls.
+    let booksState = [];
+    let membersState = [];
+
+    // Helper: safe JSON fetch wrapper (GET)
+    async function apiGet(path) {
+        const res = await fetch(`${API_BASE}${path}`);
+        if (!res.ok) {
+            // Try to read the API error JSON, but fallback to text.
+            let message = `Request failed: ${res.status}`;
+            try {
+                const err = await res.json();
+                if (err && err.message) message = err.message;
+            } catch {}
+            throw new Error(message);
+        }
+        return await res.json();
+    }
+
+    // Helper: safe JSON fetch wrapper (POST)
+    async function apiPost(path, bodyObject) {
+        const res = await fetch(`${API_BASE}${path}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(bodyObject)
+        });
+        if (!res.ok) {
+            let message = `Request failed: ${res.status}`;
+            try {
+                const err = await res.json();
+                if (err && err.message) message = err.message;
+            } catch {}
+            throw new Error(message);
+        }
+        return await res.json();
+    }
+
+    // Load latest books + members from the server.
+    async function refreshFromServer() {
+        // We fetch both lists in parallel for speed.
+        const [books, members] = await Promise.all([
+            apiGet('/books'),
+            apiGet('/members')
+        ]);
+
+        booksState = books;
+        membersState = members;
+        renderAll();
+    }
+
+    // DOM = Document Object Model (the page). We grab elements by id to update them.
+    const booksCountEl = document.getElementById('booksCount');
+    const membersCountEl = document.getElementById('membersCount');
+    const issuedCountEl = document.getElementById('issuedCount');
+
+    const booksTbody = document.getElementById('booksTbody');
+    const membersTbody = document.getElementById('membersTbody');
+
+    const booksMsg = document.getElementById('booksMsg');
+    const membersMsg = document.getElementById('membersMsg');
+    const issueMsg = document.getElementById('issueMsg');
+    const returnMsg = document.getElementById('returnMsg');
+
+    const bookSearchInput = document.getElementById('bookSearch');
+
+    // Small helper to show success/error messages.
+    function showMessage(el, text, type) {
+        // type can be "success" or "error"
+        const color = type === 'success'
+            ? 'text-emerald-700 dark:text-emerald-300'
+            : 'text-rose-700 dark:text-rose-300';
+
+        el.className = `mt-3 text-sm ${color}`;
+        el.textContent = text;
+    }
+
+    // Find a member name by id (for display in the books table).
+    function memberNameById(memberId) {
+        if (memberId === null || memberId === undefined) return '—';
+        const member = membersState.find(m => m.id === memberId);
+        return member ? member.name : '(unknown)';
+    }
+
+    // Render dashboard numbers + tables.
+    function renderAll() {
+        const books = booksState;
+        const members = membersState;
+
+        // Dashboard counts
+        booksCountEl.textContent = String(books.length);
+        membersCountEl.textContent = String(members.length);
+        issuedCountEl.textContent = String(books.filter(b => b.issued).length);
+
+        // Render books table (with search filter)
+        const keyword = bookSearchInput.value.toLowerCase().trim();
+        const filteredBooks = books.filter(b => {
+            if (keyword === '') return true;
+            return b.title.toLowerCase().includes(keyword) || b.author.toLowerCase().includes(keyword);
+        });
+
+        booksTbody.innerHTML = ''; // clear existing rows
+        for (const b of filteredBooks) {
+            const tr = document.createElement('tr'); // create a row
+            tr.className = 'align-top';
+
+            const statusBadge = b.issued
+                ? `<span class="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">Issued</span>`
+                : `<span class="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200">Available</span>`;
+
+            tr.innerHTML = `
+          <td class="py-3 pr-3 font-medium">${b.id}</td>
+          <td class="py-3 pr-3">${escapeHtml(b.title)}</td>
+          <td class="py-3 pr-3">${escapeHtml(b.author)}</td>
+          <td class="py-3 pr-3">${statusBadge}</td>
+          <td class="py-3">${b.issued ? escapeHtml(memberNameById(b.issuedToMemberId)) : '—'}</td>
+        `;
+
+            booksTbody.appendChild(tr); // add row to table
+        }
+
+        // Render members table
+        membersTbody.innerHTML = '';
+        for (const m of members) {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+          <td class="py-3 pr-3 font-medium">${m.id}</td>
+          <td class="py-3 pr-3">${escapeHtml(m.name)}</td>
+          <td class="py-3">${escapeHtml(m.email)}</td>
+        `;
+            membersTbody.appendChild(tr);
+        }
+    }
+
+    // Security/basic correctness: escape HTML so user input can't inject tags.
+    function escapeHtml(text) {
+        return String(text)
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#039;');
+    }
+
+    // Books: add a new book
+    document.getElementById('addBookForm').addEventListener('submit', (event) => {
+        event.preventDefault(); // prevent page refresh
+
+        // Read input values (strings) from the form
+        const id = Number(document.getElementById('bookId').value);
+        const title = document.getElementById('bookTitle').value.trim();
+        const author = document.getElementById('bookAuthor').value.trim();
+
+        if (!Number.isInteger(id) || id <= 0) {
+            showMessage(booksMsg, 'Book ID must be a positive integer.', 'error');
+            return;
+        }
+        if (title === '' || author === '') {
+            showMessage(booksMsg, 'Title and author are required.', 'error');
+            return;
+        }
+
+        // Send to backend
+        apiPost('/books', { id, title, author })
+            .then(() => {
+                event.target.reset();
+                showMessage(booksMsg, 'Book added successfully.', 'success');
+                return refreshFromServer();
+            })
+            .catch((err) => {
+                showMessage(booksMsg, err.message, 'error');
+            });
+    });
+
+    // Members: add a new member
+    document.getElementById('addMemberForm').addEventListener('submit', (event) => {
+        event.preventDefault();
+
+        const id = Number(document.getElementById('memberId').value);
+        const name = document.getElementById('memberName').value.trim();
+        const email = document.getElementById('memberEmail').value.trim();
+
+        if (!Number.isInteger(id) || id <= 0) {
+            showMessage(membersMsg, 'Member ID must be a positive integer.', 'error');
+            return;
+        }
+        if (name === '' || email === '') {
+            showMessage(membersMsg, 'Name and email are required.', 'error');
+            return;
+        }
+
+        apiPost('/members', { id, name, email })
+            .then(() => {
+                event.target.reset();
+                showMessage(membersMsg, 'Member added successfully.', 'success');
+                return refreshFromServer();
+            })
+            .catch((err) => {
+                showMessage(membersMsg, err.message, 'error');
+            });
+    });
+
+    // Issue book
+    document.getElementById('issueForm').addEventListener('submit', (event) => {
+        event.preventDefault();
+
+        const bookId = Number(document.getElementById('issueBookId').value);
+        const memberId = Number(document.getElementById('issueMemberId').value);
+
+        apiPost('/issue', { bookId, memberId })
+            .then(() => {
+                const member = membersState.find(m => m.id === memberId);
+                event.target.reset();
+                showMessage(issueMsg, `Issued successfully to ${member ? member.name : 'member'}.`, 'success');
+                return refreshFromServer();
+            })
+            .catch((err) => {
+                showMessage(issueMsg, err.message, 'error');
+            });
+    });
+
+    // Return book
+    document.getElementById('returnForm').addEventListener('submit', (event) => {
+        event.preventDefault();
+
+        const bookId = Number(document.getElementById('returnBookId').value);
+        const memberId = Number(document.getElementById('returnMemberId').value);
+
+        apiPost('/return', { bookId, memberId })
+            .then(() => {
+                const member = membersState.find(m => m.id === memberId);
+                event.target.reset();
+                showMessage(returnMsg, `Returned successfully from ${member ? member.name : 'member'}.`, 'success');
+                return refreshFromServer();
+            })
+            .catch((err) => {
+                showMessage(returnMsg, err.message, 'error');
+            });
+    });
+
+    // Search input: re-render books as user types
+    bookSearchInput.addEventListener('input', () => {
+        renderAll();
+    });
+
+    // Tabs: show one panel, hide others
+    const tabButtons = Array.from(document.querySelectorAll('.tabBtn'));
+    const tabPanels = {
+        books: document.getElementById('tab-books'),
+        members: document.getElementById('tab-members'),
+        issue: document.getElementById('tab-issue'),
+    };
+
+    function setActiveTab(tabName) {
+        // Update panels
+        for (const [name, panel] of Object.entries(tabPanels)) {
+            panel.classList.toggle('hidden', name !== tabName);
+        }
+
+        // Update button styles
+        for (const btn of tabButtons) {
+            const active = btn.dataset.tab === tabName;
+            btn.className = active
+                ? 'tabBtn rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500'
+                : 'tabBtn rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold shadow-sm hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800';
+        }
+    }
+
+    for (const btn of tabButtons) {
+        btn.addEventListener('click', () => setActiveTab(btn.dataset.tab));
+    }
+
+    // Dark mode toggle
+    const darkModeBtn = document.getElementById('darkModeBtn');
+
+    function applyDarkMode(isDark) {
+        // We add/remove "dark" class on the <html> element.
+        document.documentElement.classList.toggle('dark', isDark);
+        localStorage.setItem(DARK_KEY, isDark ? '1' : '0');
+    }
+
+    darkModeBtn.addEventListener('click', () => {
+        const isCurrentlyDark = document.documentElement.classList.contains('dark');
+        applyDarkMode(!isCurrentlyDark);
+    });
+
+    // Reset demo data button
+    document.getElementById('resetBtn').addEventListener('click', () => {
+        // With a real backend, reset means "restart the server" (because storage is in-memory).
+        // Here we just reload fresh data from the API.
+        showMessage(booksMsg, 'Reloading data from server...', 'success');
+        showMessage(membersMsg, 'Reloading data from server...', 'success');
+        issueMsg.textContent = '';
+        returnMsg.textContent = '';
+        refreshFromServer().catch((err) => {
+            showMessage(booksMsg, err.message, 'error');
+        });
+    });
+
+    // On page load: initialize everything
+    (function init() {
+        // Load and apply saved dark mode preference (if any)
+        const darkPref = localStorage.getItem(DARK_KEY); // '1' or '0' or null
+        applyDarkMode(darkPref === '1');
+
+        setActiveTab('books'); // default tab
+        // Load initial data from backend (API)
+        refreshFromServer().catch((err) => {
+            showMessage(booksMsg, `API error: ${err.message}`, 'error');
+        });
+    })();
+</script>
+</body>
+</html>
